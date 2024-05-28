@@ -1,0 +1,12 @@
+jikanpy-v4
+pandas
+numpy
+tensorflow
+keras
+beautifulsoup4
+scikit-learn
+matplotlib
+wordcloud
+sendgrid
+apache-airflow
+pickle
