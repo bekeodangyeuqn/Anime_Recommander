@@ -151,7 +151,7 @@ def crawl_user_list(**kwargs):
     index = kwargs["user_start"]
 
     start_id = index  # Starting user ID
-    end_id = index + 3  # Ending user ID
+    end_id = index + 10000  # Ending user ID
 
     count = 0  # keep count of users for the current session
     with open(output_file, 'r', newline='', encoding='utf-8') as csvfile:
