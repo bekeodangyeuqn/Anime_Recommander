@@ -54,17 +54,26 @@ with open('/opt/airflow/data/animelast.txt', 'r', encoding='utf-8') as f:
 with open('/opt/airflow/data/userlast.txt', 'r', encoding='utf-8') as f:
     user_start_index = int(f.read()) + 1
 
+def count_rows(filename):
+    with open(filename, 'r') as file:
+        return sum(1 for line in file)
+    
+init_details_num = count_rows('/opt/airflow/data/users-details-2023.csv') - 1
+    
+
+
 ssl._create_default_https_context = ssl._create_unverified_context
 def crawl_anime(**kwargs):
     index = kwargs["anime_start"]
     jikan = Jikan()
     result = jikan.search('anime', '')
+    last_visible_page = result['pagination']['last_visible_page']
     finish = True
     last_page = index
     all_animes = []
     
     try:
-        for _ in range(index, int(result['pagination']['last_visible_page'])+1):
+        for _ in range(index, int(last_visible_page)+1):
             # for _ in range(int(1)):
             last_page = last_page + 1
             tmp_page = json.loads(
@@ -77,38 +86,6 @@ def crawl_anime(**kwargs):
                 # if str(mal_id) == '15':
                 #     raise KeyError('TEST')
                 print(mal_id)
-                # recommendationsAPI = requests.get(
-                #     f'https://api.jikan.moe/v4/anime/{mal_id}/recommendations')
-                # time.sleep(0.6)
-                # charAPI = requests.get(
-                #     f'https://api.jikan.moe/v4/anime/{mal_id}/characters')
-                # time.sleep(0.6)
-                # staffAPI = requests.get(
-                #     f'https://api.jikan.moe/v4/anime/{mal_id}/staff')
-                # time.sleep(0.6)
-                # if recommendationsAPI.status_code != 404:
-                #     recommendations: list = json.loads(
-                #         recommendationsAPI.text)['data'][:5]
-                #     recommendationResult = []
-                #     for j in range(len(recommendations)):
-                #         url: str = recommendations[j]['entry']['url'][8:]
-                #         # print(url)
-                #         recommendationResult.append(url.split('/')[3])
-                #         # From url = 'https://myanimelist.net/anime/205/Samurai_Champloo', get 'Samurai_Champloo'
-                #     anime['crawl_recommendations'] = recommendationResult
-                # else:
-                #     anime['crawl_recommendations'] = []
-                # if charAPI.status_code != 404:
-                #     characters: list = json.loads(charAPI.text)['data'][:10]
-                #     anime['crawl_characters'] = characters
-                # else:
-                #     anime['crawl_characters'] = []
-                # if staffAPI.status_code != 404:
-                #     staff: list = json.loads(staffAPI.text)['data'][:5]
-                #     anime['crawl_staff'] = staff
-                # else:
-                #     anime['crawl_staff'] = []
-                    
                 all_animes.append(anime)
             # all_animes.extend(tmp_page)
             print(f'LENGTH: {len(all_animes)}')
@@ -220,14 +197,10 @@ def crawl_user_profile():
     # with open('/opt/airflow/data/users-details-2023.csv', 'r', encoding='utf-8') as file:
     #     user_details = list(csv.DictReader(file))
     user_details = []
-    def count_rows(filename):
-        with open(filename, 'r') as file:
-            return sum(1 for line in file)
-
 
     # Initialize counter and timer variables
     total_usernames = len(usernames)
-    total_details = count_rows('/opt/airflow/data/users-details-2023.csv') - 1
+    total_details = init_details_num
     fetch_count = 0
     total = 0
     start_time = time.time()
@@ -397,11 +370,8 @@ def crawl_user_score():
 
     # with open('/opt/airflow/data/users-details-2023.csv', 'r', encoding='utf-8') as file:
     #     user_details = list(csv.reader(file))
-    def count_rows(filename):
-        with open(filename, 'r') as file:
-            return sum(1 for line in file)
-
-    num_rows = count_rows('/opt/airflow/data/users-details-2023.csv') - 1
+    
+    num_rows = init_details_num
     status_code = 7
     batch_size = 50  # Number of usernames to fetch in each batch
     min_delay_seconds = 90  # Minimum delay duration between requests in seconds
